@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\AutorController;
+use App\Http\Controllers\LivroController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -13,6 +14,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// Rota para a página inicial
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Rotas do CRUD de Autores
+Route::resource('autores', AutorController::class)
+    ->parameters(['autores' => 'autor'])
+    ->except(['show']);
+
+// Rotas do CRUD de Livros
+Route::resource('livros', LivroController::class)
+    ->except(['show']);

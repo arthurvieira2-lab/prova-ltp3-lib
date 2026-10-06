@@ -150,21 +150,28 @@ erDiagram
 
 ## Etapa 1 — Models
 
-### Crie as models Autor Livro
+### Crie as models "Autor" e "Livro"
 
 ### Questões
 
 **Q1.1 — Como criar uma model no Laravel?**
 
 > _Resposta:_
->
+As models são criadas quando é digitado o código 'php artisan make:model nome_da_model' no terminal.
 >
 
 **Q1.2 — Como funciona uma model? Explique o papel das propriedades `$table` e `$fillable` e dos relacionamentos `hasMany` / `belongsTo`.**
 
 > _Resposta:_
->
->
+A model é oque faz a conexão entre o PHP e uma tabela do banco de dados.
+
+$table fala para o PHP o nome da tabela.
+
+$fillable indica quais tabelas liberam os campos para salvamento rápido como meio de segurança.
+
+hasMany é usado na model pai para falar que ela tem vários registros relacionados a outra tabela.
+
+belongsTo indica qual o model pai de um registro.
 
 ---
 
@@ -181,14 +188,21 @@ Confira no MySQL se as tabelas `autores` e `livros` foram criadas.
 **Q2.1 — Como criar uma migration e aplicá-la no banco de dados?**
 
 > _Resposta:_
->
->
+Uma migration é criada apartir do código 'php artisan make:migration create_nome_table' colocado no terminal. Após criado e editado, pode ser aplicado com 'php artisan migrate'.
+
 
 **Q2.2 — Como funciona uma migration? Explique os métodos `up()` e `down()`, a importância da ordem de execução e o que faz `foreignId(...)->constrained(...)`.**
 
 > _Resposta:_
->
->
+As migrations servem como um histórico de alteração do banco de dados por código.
+
+A ordem é muito importante para garantir o funcionamento do código e do banco de dados, sem criar coisas desorganizadas (uma chave estrangeira para uma tabela pai que não existe por exemplo).
+
+up() cria ou altera tabelas quando é rodado 'php artisan serve'.
+
+down() desfaz o que o up() fez quando executa o rollback.
+
+foreignId()->constrained() cria a coluna de ID com o tipo correto e monta a restrição de chave estrangeira apontando pra tabela autores.
 
 ---
 
@@ -247,20 +261,27 @@ Confira no MySQL se as tabelas `autores` e `livros` foram criadas.
 **Q3.1 — Como criar um controller? Qual a diferença de usar as opções `--resource` e `--model`?**
 
 > _Resposta:_
->
->
+A criação das controllers é feita apartir do código 'php artisan make:controller nome_da_controller' quando digitado no terminal.
+
+--resource cria a classe preenchida com os 7 métodos básicos de um CRUD: index, create, store, show, edit, update e destroy.
+
+--model faz a mesma coisa, mas já coloca a Model nos tipos dos argumentos dos métodos, deixando o código pronto pra usar.
 
 **Q3.2 — Como funciona um controller dentro da arquitetura MVC? Explique a comunicação entre Model, View e Controller e o que é o *Route Model Binding* (ex.: receber `Autor $autor` no método).**
 
 > _Resposta:_
->
->
+O controller funciona como o mediador entre a model e view.
+
+A Rota recebe a requisição do usuário e chama o Controller. O Controller conversa com a Model para buscar ou salvar dados no banco. O Controller pega essas informações e entrega para a View montar o HTML na tela do usuário.
+
+Route Model Binding é oque o Laravel faz para você não precisar fazer Autor::find($id) manualmente. Ao colocar o parâmetro Autor $autor na função, o Laravel lê o ID direto da URL, busca no banco e entrega o objeto pronto. Se não achar nada, ele já devolve uma página 404 automaticamente.
 
 **Q3.3 — Como funciona o `$request->validate()`? O que acontece quando a validação falha e quando ela passa?**
 
 > _Resposta:_
->
->
+O '$request->validate()' confere se os dados enviados no formulário seguem as regras que você definiu. Se passar: O código continua normalmente pra próxima linha do controller.
+
+Caso der erro, tudo para. Em páginas web, o Laravel manda o usuário de volta pro formulário, trazendo os avisos de erro e mantendo o que ele já tinha digitado. Se for uma API, ele devolve uma resposta JSON com status 422 Unprocessable Entity.
 
 ---
 
@@ -294,14 +315,22 @@ Confira no MySQL se as tabelas `autores` e `livros` foram criadas.
 **Q4.1 — Como criar as rotas de um CRUD no Laravel? Quais rotas o `Route::resource` gera (método HTTP, URI, ação e nome)?**
 
 > _Resposta:_
->
->
+Você cria todas as rotas do CRUD de uma só vez usando 'Route::resource('autores', AutorController::class);'
+
+Listagem: GET /autores $\rightarrow$ Método index $\rightarrow$ Nome autores.index
+Formulário de criação: GET /autores/create $\rightarrow$ Método create $\rightarrow$ Nome autores.create
+Salvar no banco: POST /autores $\rightarrow$ Método store $\rightarrow$ Nome autores.store
+Exibir um item: GET /autores/{autor} $\rightarrow$ Método show $\rightarrow$ Nome autores.show
+Formulário de edição: GET /autores/{autor}/edit $\rightarrow$ Método edit $\rightarrow$ Nome autores.edit
+Atualizar no banco: PUT/PATCH /autores/{autor} $\rightarrow$ Método update $\rightarrow$ Nome autores.update
+Deletar do banco: DELETE /autores/{autor} $\rightarrow$ Método destroy $\rightarrow$ Nome autores.destroy
 
 **Q4.2 — Como funciona o sistema de rotas? Explique o caminho de uma requisição desde a URL até o controller e a utilidade das rotas nomeadas (`route('autores.index')`).**
 
 > _Resposta:_
->
->
+Ao digitar uma URL no navegador, as routes capturam esse acesso, conferem o método e descobrem qual Controller vai receber aquele pedido.
+
+As 'Rotas Nomeadas' funcionam como apelidos pras suas URLs. Ao usar route('autores.index') no código, você gera o link de forma dinâmica.
 
 ---
 
@@ -343,27 +372,53 @@ Crie as quatro views abaixo. Todas devem estender o layout base com `@extends('l
 **Q5.1 — Como criar um formulário Blade para cadastro e para edição? Por que o formulário de edição precisa de `@method('PUT')` e para que serve o `@csrf`?**
 
 > _Resposta:_
->
->
+O formulário de cadastro
+<form action="{{ route('autores.store') }}" method="POST">
+    @csrf
+    <button type="submit">Salvar</button>
+</form>
+
+O formulário de edição
+<form action="{{ route('autores.update', $autor->id) }}" method="POST">
+    @csrf
+    @method('PUT')
+    <button type="submit">Atualizar</button>
+</form>
+
+A @csrf gera um token invisível de segurança. Sem ele, o Laravel bloqueia o envio do formulário pra evitar ataques maliciosos vindos de fora.
+
+O @method('PUT') adiciona um campo escondido avisando o Laravel pra tratar esse envio como um PUT pra poder atualizar os dados.
+
 
 **Q5.2 — Como funciona a exibição dos erros de validação e a manutenção dos dados digitados? Explique `$errors`, `@error` e `old()`.**
 
 > _Resposta:_
->
->
+O Laravel salva os erros e os dados antigos pra você usar no Blade quando o formulário falha na validação.
+
+$errors é uma variável que já chega pronta no Blade contendo a lista com todas as mensagens de erro que aconteceram.
+
+@error('campo') é um bloco prático para checar se um campo específico falhou. Se falhar, ele exibe a mensagem correspondente na variável $message
+@error('nome')
+<p style="color: red;">{{ $message }}</p>
+@enderror
+
+old('campo') recupera o texto que o usuário tinha digitado antes do erro acontecer. Colocando isso no atributo value do inpurt
+<input type="text" name="nome" value="{{ old('nome', $autor->nome ?? '') }}">
+
+
 
 ---
 
 ## Checklist de entrega
 
-- [ ] Models `Autor` e `Livro` com `$fillable` e relacionamentos
-- [ ] Migrations de `autores` e `livros` executadas com chave estrangeira
-- [ ] `AutorController` e `LivroController` com `index`, `create`, `store`, `edit`, `update`, `destroy`
-- [ ] Validações com `$request->validate()` em `store` e `update`
-- [ ] Rotas `resource` registradas e nomeadas corretamente
-- [ ] Views `create` e `edit` de autores e livros
-- [ ] Mensagens de erro e de sucesso exibidas
-- [ ] Todas as questões (Q1.1 a Q5.2) respondidas neste README
+- [x] Models `Autor` e `Livro` com `$fillable` e relacionamentos
+- [x] Migrations de `autores` e `livros` executadas com chave estrangeira
+- [x] `AutorController` e `LivroController` com `index`, `create`, `store`, `edit`, `update`, `destroy`
+- [x] Validações com `$request->validate()` em `store` e `update`
+- [x] Rotas `resource` registradas e nomeadas corretamente
+- [x] Views `create` e `edit` de autores e livros
+- [x] Mensagens de erro e de sucesso exibidas
+- [x] Todas as questões (Q1.1 a Q5.2) respondidas neste README
 
 
 ## Licença
